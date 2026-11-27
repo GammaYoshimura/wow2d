@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	protocolVersion = 1
+	protocolVersion = 2
 	zoneID          = "zone.vado"
 	tickInterval    = time.Second / 20
 	handshakeLimit  = 5 * time.Second
@@ -20,7 +21,9 @@ const (
 
 type game struct {
 	layout      plazaLayout
-	started     time.Time
+	mu          sync.Mutex
+	tick        int64
+	guests      map[*guest]struct{}
 	nextID      atomic.Uint64
 	connections chan struct{}
 }
@@ -45,7 +48,7 @@ type joinReply struct {
 func newGame(layout plazaLayout) *game {
 	return &game{
 		layout:      layout,
-		started:     time.Now(),
+		guests:      make(map[*guest]struct{}),
 		connections: make(chan struct{}, 64),
 	}
 }
@@ -95,7 +98,9 @@ func (g *game) join(w http.ResponseWriter, r *http.Request) {
 		reply.Type = "welcome"
 		reply.EntityID = fmt.Sprintf("guest-%d", id)
 		reply.Zone = zoneID
-		reply.Tick = int64(time.Since(g.started) / tickInterval)
+		g.mu.Lock()
+		reply.Tick = g.tick
+		g.mu.Unlock()
 		reply.Spawn = g.layout.center(spawn)
 	}
 
@@ -108,6 +113,65 @@ func (g *game) join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Until movement messages are introduced, an admitted guest only holds a connection.
-	<-conn.CloseRead(r.Context()).Done()
+	player := &guest{
+		position: reply.Spawn,
+		inbox:    make(chan movementInput, 1),
+		outbox:   make(chan movementSnapshot, 1),
+	}
+	g.mu.Lock()
+	g.guests[player] = struct{}{}
+	g.mu.Unlock()
+	defer func() {
+		g.mu.Lock()
+		delete(g.guests, player)
+		g.mu.Unlock()
+	}()
+	play(r.Context(), conn, player)
+}
+
+func (g *game) run(ctx context.Context) {
+	ticker := time.NewTicker(tickInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case now := <-ticker.C:
+			g.step(now)
+		}
+	}
+}
+
+func play(parent context.Context, conn *websocket.Conn, player *guest) {
+	ctx, cancel := context.WithCancel(parent)
+	defer cancel()
+	go func() {
+		defer cancel()
+		var lastSequence uint64
+		for {
+			var input movementInput
+			if err := wsjson.Read(ctx, conn, &input); err != nil {
+				return
+			}
+			if input.Type != "move" || input.Direction == nil || input.Sequence <= lastSequence {
+				continue
+			}
+			lastSequence = input.Sequence
+			input.received = time.Now()
+			sendLatest(player.inbox, input)
+		}
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case snapshot := <-player.outbox:
+			writeCtx, done := context.WithTimeout(ctx, 2*time.Second)
+			err := wsjson.Write(writeCtx, conn, snapshot)
+			done()
+			if err != nil {
+				return
+			}
+		}
+	}
 }

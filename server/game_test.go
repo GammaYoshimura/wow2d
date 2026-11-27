@@ -11,11 +11,17 @@ import (
 	"github.com/coder/websocket/wsjson"
 )
 
-func TestGuestJoinUsesServerSpawnsAndRejectsMismatches(t *testing.T) {
+func testPlaza(t *testing.T) plazaLayout {
+	t.Helper()
 	layout, err := loadPlaza("../content/plaza_v1.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	return layout
+}
+
+func TestGuestJoinUsesServerSpawnsAndRejectsMismatches(t *testing.T) {
+	layout := testPlaza(t)
 	server := httptest.NewServer(newGame(layout).routes())
 	defer server.Close()
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
