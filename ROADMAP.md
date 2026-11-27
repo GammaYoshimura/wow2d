@@ -1232,3 +1232,4 @@ En la publicación inicial, las **127 fichas** son trabajo planificado. Esta tab
 | --- | --- | --- | --- |
 | Plan inicial | [Backlog del proyecto](https://github.com/GammaYoshimura/wow2d/milestones) | Se ha publicado el plan de trabajo. La primera prueba jugable corresponde a la plaza. | M00.01 |
 | M00.01 | [#1](https://github.com/GammaYoshimura/wow2d/issues/1) · [PR #128](https://github.com/GammaYoshimura/wow2d/pull/128) | Godot 4.7.2 importó y ejecutó la escena. La prueba plaza_layout_test.gd verificó 32 × 32 casillas, 111 colisiones cuadradas, el pozo, los dos accesos y tres puntos de aparición contra el catálogo. | M00.02 |
+| M00.02 | [#2](https://github.com/GammaYoshimura/wow2d/issues/2) · [PR #129](https://github.com/GammaYoshimura/wow2d/pull/129) | Prueba de Godot con entradas en 30 ticks por eje y diagonal. Verifica distancias equivalentes, parada al soltar, colisión en x=74 px y cámara limitada en ambos bordes. | M00.03 |
