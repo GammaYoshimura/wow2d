@@ -19,7 +19,7 @@ func _exercise() -> void:
 	await _walk(["walk_right", "walk_down"], 30)
 	var diagonal := explorer.position.distance_to(start)
 	_check(cardinal > 60.0, "Cardinal movement")
-	_check(absf(cardinal - diagonal) / cardinal < 0.02, "Diagonal speed differs by 2% or more (%.2f vs %.2f)" % [cardinal, diagonal])
+	_check(absf(cardinal - diagonal) / cardinal < 0.02, "Diagonal speed differs by 2 percent or more (%.2f vs %.2f)" % [cardinal, diagonal])
 
 	explorer.position = Vector2(140, 320)
 	await _walk(["walk_left"], 90)
