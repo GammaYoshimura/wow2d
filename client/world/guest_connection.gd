@@ -54,6 +54,9 @@ func _process(_delta: float) -> void:
 		_read_message(_peer.get_packet().get_string_from_utf8())
 	if _peer == null:
 		return
+	if state == WebSocketPeer.STATE_CLOSED and _peer.get_close_code() == 1008 and entity_id.is_empty():
+		_show_join_error(_peer.get_close_reason())
+		return
 	if state == WebSocketPeer.STATE_CLOSED or (entity_id.is_empty() and Time.get_ticks_msec() >= _deadline):
 		_end_connection("Se perdió la conexión con el Vado." if not entity_id.is_empty()
 			else "No se pudo conectar al Vado.")
@@ -66,13 +69,7 @@ func _read_message(payload: String) -> void:
 	var message: Dictionary = decoded
 	match message.get("type"):
 		"error":
-			match message.get("code"):
-				"map_mismatch":
-					_end_connection("La versión del mapa no coincide con la del servidor.")
-				"protocol_mismatch":
-					_end_connection("El servidor necesita otra versión del cliente.")
-				_:
-					_end_connection("El servidor no pudo admitir al invitado.")
+			_show_join_error(str(message.get("code", "")))
 		"welcome":
 			var spawn: Variant = message.get("spawn")
 			var id: Variant = message.get("entity_id")
@@ -83,6 +80,15 @@ func _read_message(payload: String) -> void:
 			_status.text = "En el Vado · %s" % entity_id
 			_button.text = "Salir"
 			entered.emit(Vector2(float(spawn["x"]), float(spawn["y"])))
+
+func _show_join_error(code: String) -> void:
+	match code:
+		"map_mismatch":
+			_end_connection("La versión del mapa no coincide con la del servidor.")
+		"protocol_mismatch":
+			_end_connection("El servidor necesita otra versión del cliente.")
+		_:
+			_end_connection("El servidor no pudo admitir al invitado.")
 
 func _end_connection(message: String) -> void:
 	if _peer != null and _peer.get_ready_state() == WebSocketPeer.STATE_OPEN:
