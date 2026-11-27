@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
@@ -16,9 +17,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	game := newGame(layout)
+	go game.run(context.Background())
 	server := &http.Server{
 		Addr:              *address,
-		Handler:           newGame(layout).routes(),
+		Handler:           game.routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	log.Printf("plaza=%s listen=%s", layout.ID, server.Addr)
