@@ -49,7 +49,7 @@ Se conservan los números de fase del documento de partida. M05 precede a M04 pa
 
 **Persistencia.** Separar el estado efímero del encuentro de los datos de cuenta, personaje, inventario, misión y economía. Guardar posición en puntos seguros y al salir. Confirmar compras, recompensas y cambios de titular en una transacción con restricciones de unicidad y revisión. Para un traspaso de zona, retener origen o punto de retorno hasta que destino confirme el relevo. Para objetos en comercio, correo o mercado debe poder reconstruirse quién tenía su custodia en cada paso.
 
-**Entorno mínimo.** La versión inicial del cliente es Godot 4.7.2 estable. Anotar las versiones de Go, PostgreSQL y protocolo al incorporar cada componente. Reservar `client/` para Godot, `server/` para Go y migraciones y `content/` para datos compartidos. Crear cada ruta cuando llegue su primera entrega. Probar el primer paseo y las demos de fase contra el binario de servidor en Ubuntu 26.04. [Distribución oficial de Ubuntu Server 26.04 LTS](https://releases.ubuntu.com/26.04/)
+**Entorno mínimo.** La versión inicial del cliente es Godot 4.7.2 estable. El servidor inicial usa Go 1.27.4 y protocolo de juego v1. Registrar la versión de PostgreSQL cuando se incorpore. Reservar `client/` para Godot, `server/` para Go y migraciones y `content/` para datos compartidos. Crear cada ruta cuando llegue su primera entrega. Probar el primer paseo y las demos de fase contra el binario de servidor en Ubuntu 26.04. [Distribución oficial de Ubuntu Server 26.04 LTS](https://releases.ubuntu.com/26.04/)
 
 ## Qué medir al jugar
 

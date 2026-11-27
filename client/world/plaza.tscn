@@ -5,6 +5,8 @@
 [ext_resource type="Script" path="res://world/plaza.gd" id="2"]
 [ext_resource type="PackedScene" path="res://world/explorer.tscn" id="3"]
 
+[ext_resource type="PackedScene" path="res://world/guest_connection.tscn" id="4"]
+
 [node name="Plaza" type="Node2D" unique_id=1179735129]
 script = ExtResource("2")
 
@@ -67,3 +69,7 @@ theme_override_colors/font_outline_color = Color(0.18, 0.14, 0.1, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 16
 text = "VADO"
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="GuestConnection" parent="Interface" instance=ExtResource("4")]
